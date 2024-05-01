@@ -3,9 +3,10 @@ from llama_index.llms.openai import OpenAI
 from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.core.settings import Settings
 import pymongo
+import streamlit as st
 
-OPENAI_API_KEY = environ.get("OPENAI_API_KEY")
-MONGO_URI = environ.get("MONGO_URI")
+OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
+MONGO_URI = st.secrets["MONGO_URI"]
 DB_NAME = "itdata"
 COLLECTION_NAME = "it_support_data"
 
