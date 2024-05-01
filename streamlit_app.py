@@ -7,7 +7,8 @@ def get_answer(question):
     return ai_boot.getAnswer(question)
 
 def main():
-    st.title("Question and Answer App")
+    st.title("TicketAI")
+    st.subheader("AI Ticket Answering Tool.")
     
     # Create a text input for the user to enter their question
     question = st.text_input("Ask a question:")
@@ -16,6 +17,16 @@ def main():
     if st.button("Get Answer"):
         if question:
             answer = get_answer(question)
+            ticketno1 = answer[0]["metadata"]["ticket-number"].strip('"')
+            ticketno2 = answer[1]["metadata"]["ticket-number"].strip('"')
+            ticketno3 = answer[2]["metadata"]["ticket-number"].strip('"')
+            st.write("Ticket Number: ", ticketno1)
+            st.write(answer[0]["text"])
+            st.write("Ticket Number: ", ticketno2)
+            st.write(answer[1]["text"])
+            st.write("Ticket Number: ", ticketno3)
+            st.write(answer[2]["text"])
+            st.write("Complete Returned Data: ")
             st.write(answer)
         else:
             st.warning("Please enter a question.")

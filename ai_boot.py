@@ -54,8 +54,9 @@ def getAnswer(question):
 
     results = list(results)
 
-    firstDocText = results[0]['text']
-    return firstDocText
+    if len(results) == 0:
+        return "Sorry, I don't have an answer for that question."
+    return results
 
 # query = "What is blackboard learn?"
 
