@@ -1,0 +1,6 @@
+Django==4.1.3
+pymongo[srv]
+llama-index
+llama-index-embeddings-openai
+djangorestframework
+streamlit
