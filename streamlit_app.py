@@ -1,40 +1,34 @@
 import streamlit as st
 from streamlit_extras.stylable_container import stylable_container
-from streamlit_extras.tags import tagger_component
 import ai_boot
 
-def get_answer(question):
-    # In a real scenario, you'd have some logic to generate an answer based on the question
-    # For simplicity, let's just return a placeholder answer
-        
-    return ai_boot.getAnswer(question)
-
-
-import streamlit as st
-
 def main():
-    
     st.title("Boston University IT Support Dashboard")
     st.subheader("AI Ticket Answering Assistant.")
-  
 
-    # Create a text input for the user to enter their question
-    question = st.text_input("Ask a question:")
-    
-    # Create a button to trigger the answer
-    if st.button("Get Answer"):
+    question_slot = st.empty()
+    answer_slot = st.empty()
+
+    with st.form('input_form'):
+        # Place the text input and the button within the form
+        col1, col2 = st.columns([5, 1])
+        with col1:
+            question = st.text_input("Ask a question:")
+        with col2:
+            st.write(" ")
+            st.write(" ")
+            submit_button = st.form_submit_button(label="Submit")
+
+    # Check if the form has been submitted
+    if submit_button:
         if question:
             answer = ai_boot.getSummarizedAnswer(question)
 
-            # question_slot = st.empty()
-            # question_slot.write(question + "?")
-          
-            st.write("Answer: ")
-            answer_slot = st.empty()
+            question_slot.write(question + "?")
             answer_slot.write(answer["summary"])
-       
-    
+
             st.write("Sources: ")
+            st.write("Number of results: ", len(answer["sources"]))
             st.write("Top 3 results: ")
             for i in range(3):
                 with stylable_container(
@@ -52,8 +46,6 @@ def main():
                     st.write(answer["sources"][i]["text"])
                     st.write("Score: ", answer["sources"][i]["score"])
 
-            numofresults = str(len(answer))
-            
         else:
             st.warning("Please enter a question.")
 
