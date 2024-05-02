@@ -17,6 +17,8 @@ def main():
     st.title("Boston University IT Support Dashboard")
     st.subheader("AI Ticket Answering Assistant.")
     
+    question_slot = st.empty()
+    answer_slot = st.empty()
 
     # Create a text input for the user to enter their question
     question = st.text_input("Ask a question:")
@@ -26,50 +28,68 @@ def main():
         if question:
             answer = ai_boot.getSummarizedAnswer(question)
 
+            question_slot.write(question + "?")
+            answer_slot.write(answer["summary"])
+
+            st.write("Sources: ")
+            st.write("Number of results: ", len(answer["sources"]))
+            st.write("Top 3 results: ")
+            for i in range(3):
+                with stylable_container(
+                    key="container_with_border",
+                    css_styles="""
+                    {
+                        border: 1px solid rgba(49, 51, 63, 0.2);
+                        border-radius: 0.5rem;
+                        padding: calc(1em - 1px);
+                        overflow: auto;
+                    }
+                    """,
+                ):
+                    st.write("Ticket Number: ", answer["sources"][i]["ticket-number"])
+                    st.write(answer["sources"][i]["text"])
+                    st.write("Score: ", answer["sources"][i]["score"])
+
             numofresults = str(len(answer))
-
-            ticketno1 = answer[0]["metadata"]["ticket-number"].strip('"')
-            ticketno2 = answer[1]["metadata"]["ticket-number"].strip('"')
-            ticketno3 = answer[2]["metadata"]["ticket-number"].strip('"')
             
-            with stylable_container(
-                key="container_with_border",
-                css_styles="""
-                {
-                    border: 1px solid rgba(49, 51, 63, 0.2);
-                    border-radius: 0.5rem;
-                    padding: calc(1em - 1px)
-                }
-                """,
-            ):
-                st.write("Ticket Number: ", ticketno1)
-                st.write(answer[0]["text"])
+            # with stylable_container(
+            #     key="container_with_border",
+            #     css_styles="""
+            #     {
+            #         border: 1px solid rgba(49, 51, 63, 0.2);
+            #         border-radius: 0.5rem;
+            #         padding: calc(1em - 1px)
+            #     }
+            #     """,
+            # ):
+            #     st.write("Ticket Number: ", ticketno1)
+            #     st.write(answer[0]["text"])
 
-            with stylable_container(
-                key="container_with_border",
-                css_styles="""
-                {
-                    border: 1px solid rgba(49, 51, 63, 0.2);
-                    border-radius: 0.5rem;
-                    padding: calc(1em - 1px)
-                }
-                """,
-            ):
-                st.write("Ticket Number: ", ticketno2)
-                st.write(answer[1]["text"])
+            # with stylable_container(
+            #     key="container_with_border",
+            #     css_styles="""
+            #     {
+            #         border: 1px solid rgba(49, 51, 63, 0.2);
+            #         border-radius: 0.5rem;
+            #         padding: calc(1em - 1px)
+            #     }
+            #     """,
+            # ):
+            #     st.write("Ticket Number: ", ticketno2)
+            #     st.write(answer[1]["text"])
 
-            with stylable_container(
-                key="container_with_border",
-                css_styles="""
-                {
-                    border: 1px solid rgba(49, 51, 63, 0.2);
-                    border-radius: 0.5rem;
-                    padding: calc(1em - 1px)
-                }
-                """,
-            ):
-                st.write("Ticket Number: ", ticketno3)
-                st.write(answer[2]["text"])
+            # with stylable_container(
+            #     key="container_with_border",
+            #     css_styles="""
+            #     {
+            #         border: 1px solid rgba(49, 51, 63, 0.2);
+            #         border-radius: 0.5rem;
+            #         padding: calc(1em - 1px)
+            #     }
+            #     """,
+            # ):
+            #     st.write("Ticket Number: ", ticketno3)
+            #     st.write(answer[2]["text"])
 
         else:
             st.warning("Please enter a question.")
