@@ -68,13 +68,11 @@ def main():
         col1, col2 = st.columns([5, 1])
         with col1:
             question = st.text_input("Ask a question:")
+            save_query = st.checkbox("Save this query")
         with col2:
             st.write(" ")
             st.write(" ")
             submit_button = st.form_submit_button(label="Submit")
-
-        if submit_button:
-            save_query = st.checkbox("Save this query")
 
     # Check if the form has been submitted
     if submit_button:
