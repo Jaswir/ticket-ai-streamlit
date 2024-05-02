@@ -1,6 +1,8 @@
 import streamlit as st
 from streamlit_extras.stylable_container import stylable_container
 import ai_boot
+import json
+import random
 
 def main():
     st.title("Boston University IT Support Dashboard")
@@ -19,6 +21,10 @@ def main():
         st.write("Sources: ")
         st.write("Number of results: ", len(answer["sources"]))
         st.write("Top 3 results: ")
+
+        # Generate a unique ticket number
+        ticket_number = "IDC" + ''.join(random.choices('0123456789', k=6))
+
         for i in range(3):
             with stylable_container(
                 key="container_with_border",
@@ -31,29 +37,25 @@ def main():
                 }
                 """,
             ):
-                st.write("Ticket Number: ", answer["sources"][i]["ticket-number"])
+                st.write("Ticket Number: ", ticket_number)
                 st.write(answer["sources"][i]["text"])
                 st.write("Score: ", answer["sources"][i]["score"])
 
+        return ticket_number
+
     st.sidebar.title("Existing Tickets")
 
-    placeholder_tickets = {
-        "IDC738912": "Are there many opportunities for learning AI development in BU?",
-        "IDC732671": "What is the latest IT support trend at BU?",
-        "IDC732237": "How to get BU account?",
-    }
+    # Load tickets from JSON file
+    try:
+        with open('tickets.json', 'r') as file:
+            placeholder_tickets = json.load(file)
+    except FileNotFoundError:
+        placeholder_tickets = {}
 
     # Define sidebar buttons for different questions
-    question_button_1 = st.sidebar.button("Ticket Number:" + " IDC738912  \n " + placeholder_tickets["IDC738912"])
-    question_button_2 = st.sidebar.button("Ticket Number: IDC732671  \n " + placeholder_tickets["IDC732671"])
-    question_button_3 = st.sidebar.button("Ticket Number: IDC732237  \n " + placeholder_tickets["IDC732237"])
-
-    if question_button_1:
-        run_query(placeholder_tickets["IDC738912"])
-    elif question_button_2:
-        run_query(placeholder_tickets["IDC732671"])
-    elif question_button_3:
-        run_query(placeholder_tickets["IDC732237"])
+    for ticket_id, ticket_question in placeholder_tickets.items():
+        if st.sidebar.button("Ticket Number: " + ticket_id + "\n" + ticket_question):
+            run_query(ticket_question)
 
     # Add a button at the bottom of the navbar for generating own ticket
     st.sidebar.markdown("---")
@@ -71,12 +73,28 @@ def main():
             st.write(" ")
             submit_button = st.form_submit_button(label="Submit")
 
+        if submit_button:
+            save_query = st.checkbox("Save this query")
+
     # Check if the form has been submitted
     if submit_button:
         if question:
-            run_query(question)
+            ticket_number = run_query(question)
+            if save_query:
+                save_to_file(ticket_number, question)
         else:
             st.warning("Please enter a question.")
+
+def save_to_file(ticket_number, question):
+    # Save the ticket to the JSON file
+    with open('tickets.json', 'r+') as file:
+        try:
+            data = json.load(file)
+        except json.JSONDecodeError:
+            data = {}
+        data[ticket_number] = " \n " + question
+        file.seek(0)
+        json.dump(data, file)
 
 if __name__ == "__main__":
     main()
