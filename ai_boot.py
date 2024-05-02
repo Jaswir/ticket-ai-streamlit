@@ -2,6 +2,8 @@ from os import environ
 from llama_index.llms.openai import OpenAI
 from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.core.settings import Settings
+from llama_index.vector_stores.mongodb import MongoDBAtlasVectorSearch
+from llama_index.core import VectorStoreIndex, StorageContext
 import pymongo
 import streamlit as st
 
@@ -19,6 +21,7 @@ Settings.embed_model = embed_model
 if not MONGO_URI:
     print("MONGO_URI not set in environment variables")
 
+
 def get_mongo_client(mongo_uri):
     """Establish connection to the MongoDB."""
     try:
@@ -29,12 +32,23 @@ def get_mongo_client(mongo_uri):
         print(f"Connection failed: {e}")
         return None
 
+
 def generate_embedding(text):
     return embed_model.get_text_embedding(text)
+
 
 mongo_client = get_mongo_client(MONGO_URI)
 db = mongo_client[DB_NAME]
 collection = db[COLLECTION_NAME]
+vector_store = MongoDBAtlasVectorSearch(
+    mongo_client,
+    db_name=DB_NAME,
+    collection_name=COLLECTION_NAME,
+    index_name="vector_index",
+)
+storage_context = StorageContext.from_defaults(vector_store=vector_store)
+index = VectorStoreIndex.from_documents([], storage_context=storage_context)
+query_engine = index.as_query_engine(similarity_top_k=3)
 
 
 def getAnswer(question):
@@ -58,5 +72,27 @@ def getAnswer(question):
         return "Sorry, I don't have an answer for that question."
     return results
 
-# query = "What is blackboard learn?"
 
+def getSummarizedAnswer(question):
+    response = query_engine.query(question)
+    summary = response.response
+    sources = response.source_nodes
+   
+    sourcesData = []
+    for item in sources:
+
+        ticket_number = item.metadata["ticket-number"].strip('"')
+        text = item.text
+        score = item.score
+        sourceData = {"ticket-number": ticket_number, "text": text, "score": score}
+        sourcesData.append(sourceData)
+
+    
+    result = {"summary": summary, "sources": sourcesData}
+
+    print("RESULT: ", result)
+    return result
+
+query = "How to get BU account?"
+
+getSummarizedAnswer(query)

@@ -9,16 +9,14 @@ def get_answer(question):
         
     return ai_boot.getAnswer(question)
 
+
 import streamlit as st
 
-if 'show_title' not in st.session_state:
-    st.session_state.show_title = False
-
 def main():
-    if not st.session_state.show_title:
-        st.title("TicketAI")
-        st.subheader("AI Ticket Answering Tool.")
-        st.session_state.show_title = True
+    
+    st.title("Boston University IT Support Dashboard")
+    st.subheader("AI Ticket Answering Assistant.")
+    
 
     # Create a text input for the user to enter their question
     question = st.text_input("Ask a question:")
@@ -26,14 +24,9 @@ def main():
     # Create a button to trigger the answer
     if st.button("Get Answer"):
         if question:
-            answer = get_answer(question)
+            answer = ai_boot.getSummarizedAnswer(question)
 
             numofresults = str(len(answer))
-            tagger_component(
-                "tags:",
-                ["tickets: " + numofresults, "number", "answer", "question", "support"],
-                color_name=["blue", "green", "red", "yellow", "pink"],
-            )   
 
             ticketno1 = answer[0]["metadata"]["ticket-number"].strip('"')
             ticketno2 = answer[1]["metadata"]["ticket-number"].strip('"')
@@ -78,10 +71,6 @@ def main():
                 st.write("Ticket Number: ", ticketno3)
                 st.write(answer[2]["text"])
 
-            st.write("Complete Returned Object: ")
-            st.write(answer)
-            
-            st.session_state.show_title = False
         else:
             st.warning("Please enter a question.")
 

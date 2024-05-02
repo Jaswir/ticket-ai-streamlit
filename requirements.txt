@@ -5,3 +5,4 @@ llama-index-embeddings-openai
 djangorestframework
 streamlit
 streamlit_extras
+llama-index-vector-stores-mongodb
