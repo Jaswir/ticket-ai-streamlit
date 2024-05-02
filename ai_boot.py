@@ -89,10 +89,7 @@ def getSummarizedAnswer(question):
 
     
     result = {"summary": summary, "sources": sourcesData}
-
-    print("RESULT: ", result)
     return result
 
-query = "How to get BU account?"
-
-getSummarizedAnswer(query)
+# query = "How to get BU account?"
+# getSummarizedAnswer(query)
