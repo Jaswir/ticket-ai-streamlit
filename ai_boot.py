@@ -6,12 +6,14 @@ from llama_index.vector_stores.mongodb import MongoDBAtlasVectorSearch
 from llama_index.core import VectorStoreIndex, StorageContext
 import pymongo
 import streamlit as st
+from openai import OpenAI as OpenAIClient
 
 OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
 MONGO_URI = st.secrets["MONGO_URI"]
 DB_NAME = "itdata"
 COLLECTION_NAME = "it_support_data"
 
+openAIClient = OpenAIClient(api_key=OPENAI_API_KEY)
 embed_model = OpenAIEmbedding(model="text-embedding-3-small", dimensions=256)
 llm = OpenAI()
 Settings.llm = llm
@@ -77,7 +79,7 @@ def getSummarizedAnswer(question):
     response = query_engine.query(question)
     summary = response.response
     sources = response.source_nodes
-   
+
     sourcesData = []
     for item in sources:
 
@@ -87,9 +89,56 @@ def getSummarizedAnswer(question):
         sourceData = {"ticket-number": ticket_number, "text": text, "score": score}
         sourcesData.append(sourceData)
 
-    
     result = {"summary": summary, "sources": sourcesData}
     return result
 
+
+def getSummarizedAnswerGPT4(question):
+    results = collection.aggregate(
+        [
+            {
+                "$vectorSearch": {
+                    "queryVector": generate_embedding(question),
+                    "path": "embedding",
+                    "numCandidates": 100,
+                    "limit": 3,
+                    "index": "vector_index",
+                }
+            }
+        ]
+    )
+
+    fullanswer = "Top 3 results: \n"
+    sourcesData = []
+
+    i = 0
+    for document in results:
+        i += 1
+        metadata = document["metadata"]
+        ticket_number = metadata.get("ticket-number", "N/A")
+        text = document["text"]
+
+        fullanswer += "#" + str(i) + ": " + text + "\n"
+        sourceData = {"ticket-number": ticket_number, "text": text, "score": -1}
+        sourcesData.append(sourceData)
+
+    input = question + "this is the raw answer use it in your response" + fullanswer
+    response = openAIClient.chat.completions.create(
+        model="gpt-4-turbo",
+        messages=[
+            {
+                "role": "system",
+                "content": """You are a helpful assistant for Boston University IT Support, mention this when greeted.
+             Your role is to answer questions about Bu Login, Blackboard and other IT related issues.""",
+            },
+            {"role": "user", "content": input},
+        ],
+    )
+
+    summary = response.choices[0].message.content
+    result = {"summary": summary, "sources": sourcesData}
+    return result
+
+
 # query = "How to get BU account?"
-# getSummarizedAnswer(query)
+# print(getSummarizedAnswerGPT4(query))
