@@ -5,6 +5,10 @@ import json
 import random
 
 def main():
+
+    if 'manual' not in st.session_state:
+        st.session_state.manual = False
+    
     st.title("Boston University IT Support Dashboard")
     st.subheader("AI Ticket Answering Assistant.")
 
@@ -55,6 +59,7 @@ def main():
     # Define sidebar buttons for different questions
     for ticket_id, ticket_question in placeholder_tickets.items():
         if st.sidebar.button("Ticket Number: " + ticket_id + "\n" + ticket_question):
+            st.session_state.manual = False 
             run_query(ticket_question)
 
     # Add a button at the bottom of the navbar for generating own ticket
@@ -62,26 +67,28 @@ def main():
     if st.sidebar.button("Generate Your Own Ticket"):
         question_slot.empty()
         answer_slot.empty()
+        st.session_state.manual = True 
 
-    with st.form('input_form'):
-        # Place the text input and the button within the form
-        col1, col2 = st.columns([5, 1])
-        with col1:
-            question = st.text_input("Ask a question:")
-            save_query = st.checkbox("Save this query")
-        with col2:
-            st.write(" ")
-            st.write(" ")
-            submit_button = st.form_submit_button(label="Submit")
+    if st.session_state.manual:
+        with st.form('input_form'):
+            # Place the text input and the button within the form
+            col1, col2 = st.columns([5, 1])
+            with col1:
+                question = st.text_input("Ask a question:")
+                save_query = st.checkbox("Save this query")
+            with col2:
+                st.write(" ")
+                st.write(" ")
+                submit_button = st.form_submit_button(label="Submit")
 
-    # Check if the form has been submitted
-    if submit_button:
-        if question:
-            ticket_number = run_query(question)
-            if save_query:
-                save_to_file(ticket_number, question)
-        else:
-            st.warning("Please enter a question.")
+        # Check if the form has been submitted
+        if submit_button:
+            if question:
+                ticket_number = run_query(question)
+                if save_query:
+                    save_to_file(ticket_number, question)
+            else:
+                st.warning("Please enter a question.")
 
 def save_to_file(ticket_number, question):
     # Save the ticket to the JSON file
