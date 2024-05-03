@@ -13,7 +13,7 @@ def main():
 
     # Function to handle button click
     def run_query(question):
-        answer = ai_boot.getSummarizedAnswer(question)
+        answer = ai_boot.getSummarizedAnswerGPT4(question)
 
         question_slot.write(question + "?")
         answer_slot.write(answer["summary"])
@@ -37,13 +37,13 @@ def main():
                 }
                 """,
             ):
-                st.write("Ticket Number: ", ticket_number)
+                st.write("Ticket Number: ", answer["sources"][i]["ticket-number"].strip('"'))
                 st.write(answer["sources"][i]["text"])
-                st.write("Score: ", answer["sources"][i]["score"])
+                # st.write("Score: ", answer["sources"][i]["score"])
 
         return ticket_number
 
-    st.sidebar.title("Existing Tickets")
+    st.sidebar.title("Incoming Questions")
 
     # Load tickets from JSON file
     try:

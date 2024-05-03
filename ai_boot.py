@@ -122,7 +122,7 @@ def getSummarizedAnswerGPT4(question):
         sourceData = {"ticket-number": ticket_number, "text": text, "score": -1}
         sourcesData.append(sourceData)
 
-    input = question + "this is the raw answer use it in your response" + fullanswer
+    input = question + "this is the raw answer use it in your response, Answer in max 5 sentences structure your response for readability" + fullanswer
     response = openAIClient.chat.completions.create(
         model="gpt-4-turbo",
         messages=[
